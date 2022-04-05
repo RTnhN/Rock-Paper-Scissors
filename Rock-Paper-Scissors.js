@@ -1,3 +1,18 @@
+const results = document.querySelector("#result");
+const playButtons = document.querySelectorAll(".playButtons button");
+const playButtonsContainer = document.querySelector(".playButtons");
+const resetButton = document.querySelector(".resetButton");
+const playerScore = document.querySelector("div.playerScore div.score");
+const computerScore = document.querySelector("div.computerScore div.score");
+const MAX_NUMBER_OF_POINTS = 5;
+let playerWins = 0;
+let computerWins = 0;
+
+resetButton.style.display = "none";
+
+resetButton.addEventListener("click", () => window.location.reload());
+playButtons.forEach(button => button.addEventListener("click", game));
+
 
 //Basic helper functions
 function capitalizeFirst(string){
@@ -14,80 +29,44 @@ function computerPlay() {
 function playRound(playerSelection, computerSelection) {
   // first selection is player while second is computer 
   let winner;
-  const actions = ["rock", "paper", "scissors"];
   const truthTable = {
-    "rock_rock": "tie",
-    "rock_paper": "computer",
-    "rock_scissors": "player",
-    "paper_rock": "player",
-    "paper_paper": "tie",
-    "paper_scissors": "computer",
-    "scissors_rock": "computer",
-    "scissors_paper": "player",
-    "scissors_scissors":"tie"
+    "rock_rock": "Tie!",
+    "rock_paper": `You lose! ${capitalizeFirst(computerSelection)} beats ${capitalizeFirst(playerSelection)}`,
+    "rock_scissors": `You win! ${capitalizeFirst(playerSelection)} beats ${capitalizeFirst(computerSelection)}`,
+    "paper_rock": `You win! ${capitalizeFirst(playerSelection)} beats ${capitalizeFirst(computerSelection)}`,
+    "paper_paper": "Tie!",
+    "paper_scissors": `You lose! ${capitalizeFirst(computerSelection)} beats ${capitalizeFirst(playerSelection)}`,
+    "scissors_rock": `You lose! ${capitalizeFirst(computerSelection)} beats ${capitalizeFirst(playerSelection)}`,
+    "scissors_paper": `You win! ${capitalizeFirst(playerSelection)} beats ${capitalizeFirst(computerSelection)}`,
+    "scissors_scissors":"Tie!"
   }; 
-
-  let combined_key = `${playerSelection.toLowerCase()}_${computerSelection.toLowerCase()}`
-  if (combined_key in truthTable) {
-    winner = truthTable[combined_key];
-  } else {
-    if (actions.includes(playerSelection)){
-      return "Computer gave bad action. This is a bug that should not happen...";
-
-    } else if (actions.includes(computerSelection)) {
-      return "Player gave bad action. Please select either Rock, Paper, or Scissors";
-    } else {
-      return "Both player and computer are being rascals. Debug both player and code.";
-    }
-  }
-
-  switch (winner) {
-    case "computer":
-      return `You lose! ${capitalizeFirst(computerSelection)} beats ${capitalizeFirst(playerSelection)}`;
-      break;
-    case "player":
-      return `You win! ${capitalizeFirst(playerSelection)} beats ${capitalizeFirst(computerSelection)}`;
-      break;
-    default:
-      return "Tie!";
-      break;
-  }
+  return truthTable[`${playerSelection}_${computerSelection}`];
 }
 
 //Core game function
-function game(numberOfRounds) {
-  alert(`Welcome to Rock Paper Scissors! Lets play ${numberOfRounds} games and see who is the winner.`)
-  let playResult = "";
-  let playerWins = 0;
-  let computerWins = 0;
-  for(let i = 0; i < numberOfRounds;i++){
-    let playerSelection = prompt("What action do you want to play with?(Rock, Paper, or Scissors): ");
-    if (playerSelection === null){
-      alert(`Okay, if you want to stop playing, that is fine. You only got through ${i} game(s).`);
-      break
+function game(e) {
+  playResult = playRound(e.target.id, computerPlay());
+  results.textContent = playResult;
+  switch (playResult.split("!")[0]){
+    case "You win":
+      playerWins++;
+      break;
+    case "You lose":
+      computerWins++;
+    default:
+      break;
     }
-    playResult = playRound(playerSelection, computerPlay());
-    alert(playResult);
-    switch (playResult.split("!")[0]) {
-      case "You win":
-        playerWins++;
-        break;
-      case "You lose":
-        computerWins++;
-      default:
-        break;
-    }
-  }
-  if (playerWins > computerWins){
-    alert(`Player Won with ${playerWins} vs ${computerWins}`);
-  } else if (playerWins < computerWins){
-    alert(`Computer Won with ${computerWins} vs ${playerWins}`);
-  } else {
-    alert(`It was a tie with ${computerWins} for all`);
-  }
+  playerScore.textContent = playerWins;
+  computerScore.textContent = computerWins;
 
+  if (playerWins === MAX_NUMBER_OF_POINTS){
+    results.textContent = `Player wins the game with ${playerWins} to ${computerWins}!`;
+    playButtonsContainer.style.display = "none";
+    resetButton.style.display = "block";
+  }
+  else if (computerWins === MAX_NUMBER_OF_POINTS){
+    results.textContent = `Computer wins the game with ${computerWins} to ${playerWins}!`;
+    playButtonsContainer.style.display = "none";
+    resetButton.style.display = "block";
+  } 
 }
-
-//Starts game as soon as page is visited
-let numberOfRounds = 5;
-game(numberOfRounds);
